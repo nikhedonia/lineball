@@ -6,6 +6,9 @@ html, body {
   overflow: hidden;
   font-family: system-ui, sans-serif;
   background: #f3f4f6;
+  /* index.css sets color: var(--text) which is #6b6375 — too light.
+     Force a legible dark colour for all game UI. */
+  color: #111827;
 }
 
 #root {
@@ -173,6 +176,7 @@ html, body {
   padding: 12px 10px;
   font-size: 14px;
   font-weight: 600;
+  color: #111827;
   background: #fff;
   border: 2px solid #e5e7eb;
   border-radius: 10px;
@@ -215,6 +219,7 @@ html, body {
   cursor: pointer;
   transition: border-color .15s, background .15s;
   gap: 4px;
+  color: #111827;
 }
 .map-btn:hover  { border-color: #9ca3af; }
 .map-btn.active { border-color: #111827; background: #f9fafb; }
