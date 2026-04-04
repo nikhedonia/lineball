@@ -6,6 +6,8 @@ import {
   getValidMoves,
   goalWinner,
   getPredrawnEdges,
+  topGoal,
+  bottomGoal,
 } from './gameLogic';
 
 interface AIGameState {
@@ -20,9 +22,16 @@ const WIN_SCORE = 100_000;
 
 /** Negative Euclidean distance from ball to centre of AI's target goal. */
 function heuristic(ball: Point, aiPlayer: Player, map: MapConfig): number {
-  const targetY = aiPlayer === 1 ? map.fieldHeight + 1 : -1;
-  const targetX = (map.goalMinX + map.goalMaxX) / 2;
-  return -Math.sqrt((ball.x - targetX) ** 2 + (ball.y - targetY) ** 2);
+  // P1 attacks bottom goal; P2 attacks top goal
+  if (aiPlayer === 1) {
+    const bg = bottomGoal(map);
+    const targetX = (bg.min + bg.max) / 2;
+    return -Math.sqrt((ball.x - targetX) ** 2 + (ball.y - (map.fieldHeight + 1)) ** 2);
+  } else {
+    const tg = topGoal(map);
+    const targetX = (tg.min + tg.max) / 2;
+    return -Math.sqrt((ball.x - targetX) ** 2 + (ball.y - (-1)) ** 2);
+  }
 }
 
 function applyMove(state: AIGameState, to: Point, map: MapConfig, predrawn: Set<string>): AIGameState {

@@ -16,6 +16,18 @@ export function deserializeEdge(key: string): [Point, Point] {
   return [{ x: x1, y: y1 }, { x: x2, y: y2 }];
 }
 
+// ── Goal range helpers ────────────────────────────────────────────────────────
+
+/** Returns the x-range of the top goal (y = -1).  Player 2 scores here. */
+export function topGoal(map: MapConfig) {
+  return { min: map.topGoalMinX ?? map.goalMinX, max: map.topGoalMaxX ?? map.goalMaxX };
+}
+
+/** Returns the x-range of the bottom goal (y = fieldHeight+1).  Player 1 scores here. */
+export function bottomGoal(map: MapConfig) {
+  return { min: map.bottomGoalMinX ?? map.goalMinX, max: map.bottomGoalMaxX ?? map.goalMaxX };
+}
+
 // ── Pre-drawn edges (boundary + map walls) ────────────────────────────────────
 
 const predrawnCache = new Map<string, Set<string>>();
@@ -32,18 +44,21 @@ export function getPredrawnEdges(map: MapConfig): Set<string> {
   const edges = new Set<string>();
   const se = serializeEdge;
 
+  const tg = topGoal(map);
+  const bg = bottomGoal(map);
+
   // Top boundary — left of goal opening
-  for (let x = 0; x < map.goalMinX; x++)
+  for (let x = 0; x < tg.min; x++)
     edges.add(se({ x, y: 0 }, { x: x + 1, y: 0 }));
   // Top boundary — right of goal opening
-  for (let x = map.goalMaxX; x < map.fieldWidth; x++)
+  for (let x = tg.max; x < map.fieldWidth; x++)
     edges.add(se({ x, y: 0 }, { x: x + 1, y: 0 }));
 
   // Bottom boundary — left of goal opening
-  for (let x = 0; x < map.goalMinX; x++)
+  for (let x = 0; x < bg.min; x++)
     edges.add(se({ x, y: map.fieldHeight }, { x: x + 1, y: map.fieldHeight }));
   // Bottom boundary — right of goal opening
-  for (let x = map.goalMaxX; x < map.fieldWidth; x++)
+  for (let x = bg.max; x < map.fieldWidth; x++)
     edges.add(se({ x, y: map.fieldHeight }, { x: x + 1, y: map.fieldHeight }));
 
   // Left boundary
@@ -64,8 +79,10 @@ export function getPredrawnEdges(map: MapConfig): Set<string> {
 
 export function isValidPoint(x: number, y: number, map: MapConfig): boolean {
   if (x >= 0 && x <= map.fieldWidth && y >= 0 && y <= map.fieldHeight) return true;
-  if (y === -1 && x >= map.goalMinX && x <= map.goalMaxX) return true;
-  if (y === map.fieldHeight + 1 && x >= map.goalMinX && x <= map.goalMaxX) return true;
+  const tg = topGoal(map);
+  const bg = bottomGoal(map);
+  if (y === -1 && x >= tg.min && x <= tg.max) return true;
+  if (y === map.fieldHeight + 1 && x >= bg.min && x <= bg.max) return true;
   return false;
 }
 
@@ -103,13 +120,15 @@ export function isMoveValid(
   if (Math.abs(dx) > 1 || Math.abs(dy) > 1 || (dx === 0 && dy === 0)) return false;
   if (!isValidPoint(to.x, to.y, map)) return false;
 
-  const crossesTop = to.y === -1 || from.y === -1;
+  const crossesTop    = to.y === -1               || from.y === -1;
   const crossesBottom = to.y === map.fieldHeight + 1 || from.y === map.fieldHeight + 1;
-  if (crossesTop || crossesBottom) {
-    if (
-      from.x < map.goalMinX || from.x > map.goalMaxX ||
-      to.x   < map.goalMinX || to.x   > map.goalMaxX
-    ) return false;
+  if (crossesTop) {
+    const tg = topGoal(map);
+    if (from.x < tg.min || from.x > tg.max || to.x < tg.min || to.x > tg.max) return false;
+  }
+  if (crossesBottom) {
+    const bg = bottomGoal(map);
+    if (from.x < bg.min || from.x > bg.max || to.x < bg.min || to.x > bg.max) return false;
   }
 
   const key = serializeEdge(from, to);

@@ -6,8 +6,14 @@ export interface MapConfig {
   description: string;
   fieldWidth: number;   // max x index  (cols = fieldWidth + 1)
   fieldHeight: number;  // max y index  (rows = fieldHeight + 1)
+  /** Symmetric goal range used for BOTH top and bottom (unless overridden below). */
   goalMinX: number;
   goalMaxX: number;
+  /** Optional asymmetric overrides.  When set, top goal ≠ bottom goal. */
+  topGoalMinX?: number;
+  topGoalMaxX?: number;
+  bottomGoalMinX?: number;
+  bottomGoalMaxX?: number;
   ballStart: Point;
   walls: string[];      // serialised wall edges (pre-drawn inner obstacles)
 }
@@ -120,19 +126,21 @@ export const MAPS: MapConfig[] = [
     ],
   },
 
-  // 7. Zigzag — four staggered walls in two symmetric pairs; alternates left/right passages
+  // 7. Zigzag — Z-shaped field: top goal right, bottom goal left
+  //    Interior walls seal top-left & bottom-right corners leaving a Z corridor.
   {
     id: 'zigzag',
     name: 'Zigzag',
-    description: '9 × 15 · 4 symmetric walls',
-    fieldWidth: 8, fieldHeight: 14,
-    goalMinX: 3, goalMaxX: 5,
-    ballStart: { x: 4, y: 7 },
+    description: '9 × 13 · Z-shaped field',
+    fieldWidth: 8, fieldHeight: 12,
+    goalMinX: 1,        goalMaxX: 3,    // bottom goal — left side (P1 scores here)
+    topGoalMinX: 5,     topGoalMaxX: 7, // top goal    — right side (P2 scores here)
+    ballStart: { x: 4, y: 6 },
     walls: [
-      ...wallLine(1, 3, 6, 3),   // upper-outer: gap on left (x<1) & right (x>6)
-      ...wallLine(2, 6, 7, 6),   // upper-inner: mirror of lower-inner
-      ...wallLine(1, 8, 6, 8),   // lower-inner: mirror of upper-inner
-      ...wallLine(2, 11, 7, 11), // lower-outer: mirror of upper-outer
+      ...wallLine(0, 4, 4, 4),   // top-left corner: bottom edge
+      ...wallLine(4, 0, 4, 4),   // top-left corner: right edge
+      ...wallLine(4, 8, 8, 8),   // bottom-right corner: top edge
+      ...wallLine(4, 8, 4, 12),  // bottom-right corner: left edge
     ],
   },
 ];

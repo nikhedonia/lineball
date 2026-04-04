@@ -149,8 +149,10 @@ function MapPreview({ map }: { map: MapConfig }) {
     wallSegs.push({ x1, y1, x2, y2 });
   }
 
-  const gx1 = px(map.goalMinX);
-  const gx2 = px(map.goalMaxX);
+  const tgMin = map.topGoalMinX    ?? map.goalMinX;
+  const tgMax = map.topGoalMaxX    ?? map.goalMaxX;
+  const bgMin = map.bottomGoalMinX ?? map.goalMinX;
+  const bgMax = map.bottomGoalMaxX ?? map.goalMaxX;
 
   return (
     <svg
@@ -159,13 +161,13 @@ function MapPreview({ map }: { map: MapConfig }) {
       preserveAspectRatio="xMidYMid meet"
     >
       {/* top goal */}
-      <rect x={gx1} y={pad - 0.5} width={gx2 - gx1} height={1.5}
+      <rect x={px(tgMin)} y={pad - 0.5} width={tgMax - tgMin} height={1.5}
         fill="rgba(59,130,246,0.35)" stroke="#3b82f6" strokeWidth={0.4} />
       {/* field */}
       <rect x={px(0)} y={py(0)} width={map.fieldWidth} height={map.fieldHeight}
         fill="#e8f4e8" stroke="#374151" strokeWidth={0.6} />
       {/* bottom goal */}
-      <rect x={gx1} y={py(map.fieldHeight) - 0.1} width={gx2 - gx1} height={1.5}
+      <rect x={px(bgMin)} y={py(map.fieldHeight) - 0.1} width={bgMax - bgMin} height={1.5}
         fill="rgba(239,68,68,0.35)" stroke="#ef4444" strokeWidth={0.4} />
       {/* walls */}
       {wallSegs.map((w, i) => (

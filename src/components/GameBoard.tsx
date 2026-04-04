@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { CELL_SIZE, PADDING } from '../constants';
-import { deserializeEdge, getValidMoves, isValidPoint } from '../gameLogic';
+import { deserializeEdge, getValidMoves, isValidPoint, topGoal, bottomGoal } from '../gameLogic';
 import { useGameStore } from '../store/gameStore';
 import type { Point } from '../types';
 import type { MapConfig } from '../maps';
@@ -17,25 +17,28 @@ function allPoints(map: MapConfig): Point[] {
   const pts: Point[] = [];
   for (let x = 0; x <= map.fieldWidth; x++)
     for (let y = 0; y <= map.fieldHeight; y++) pts.push({ x, y });
-  for (let x = map.goalMinX; x <= map.goalMaxX; x++) {
-    pts.push({ x, y: -1 });
-    pts.push({ x, y: map.fieldHeight + 1 });
-  }
+  const tg = topGoal(map);
+  const bg = bottomGoal(map);
+  for (let x = tg.min; x <= tg.max; x++) pts.push({ x, y: -1 });
+  for (let x = bg.min; x <= bg.max; x++) pts.push({ x, y: map.fieldHeight + 1 });
   return pts;
 }
 
 function fieldBoundaryPath(map: MapConfig): string {
+  const tg = topGoal(map);
+  const bg = bottomGoal(map);
   return [
-    `M ${sx(0)} ${sy(0)} H ${sx(map.goalMinX)}`,
-    `M ${sx(map.goalMaxX)} ${sy(0)} H ${sx(map.fieldWidth)} V ${sy(map.fieldHeight)} H ${sx(map.goalMaxX)}`,
-    `M ${sx(map.goalMinX)} ${sy(map.fieldHeight)} H ${sx(0)} V ${sy(0)}`,
+    `M ${sx(0)} ${sy(0)} H ${sx(tg.min)}`,
+    `M ${sx(tg.max)} ${sy(0)} H ${sx(map.fieldWidth)} V ${sy(map.fieldHeight)} H ${sx(bg.max)}`,
+    `M ${sx(bg.min)} ${sy(map.fieldHeight)} H ${sx(0)} V ${sy(0)}`,
   ].join(' ');
 }
 
 function goalBoxPath(side: 'top' | 'bottom', map: MapConfig): string {
+  const g = side === 'top' ? topGoal(map) : bottomGoal(map);
   const yField = side === 'top' ? sy(0) : sy(map.fieldHeight);
   const yGoal  = side === 'top' ? sy(-1) : sy(map.fieldHeight + 1);
-  return `M ${sx(map.goalMinX)} ${yField} V ${yGoal} H ${sx(map.goalMaxX)} V ${yField}`;
+  return `M ${sx(g.min)} ${yField} V ${yGoal} H ${sx(g.max)} V ${yField}`;
 }
 
 export default function GameBoard() {
@@ -69,7 +72,10 @@ export default function GameBoard() {
   }, [map]);
 
   const ballFill = PLAYER_FILL[currentPlayer];
-  const goalCenterX = sx((map.goalMinX + map.goalMaxX) / 2);
+  const tg = topGoal(map);
+  const bg = bottomGoal(map);
+  const topGoalCenterX   = sx((tg.min + tg.max) / 2);
+  const bottomGoalCenterX = sx((bg.min + bg.max) / 2);
 
   const W = vbWidth(map);
   const H = vbHeight(map);
@@ -83,11 +89,11 @@ export default function GameBoard() {
         style={{ display: 'block' }}
       >
         {/* ── Goal fills ── */}
-        <rect x={sx(map.goalMinX)} y={sy(-1)}
-          width={(map.goalMaxX - map.goalMinX) * CELL_SIZE} height={CELL_SIZE}
+        <rect x={sx(tg.min)} y={sy(-1)}
+          width={(tg.max - tg.min) * CELL_SIZE} height={CELL_SIZE}
           fill="rgba(59,130,246,0.15)" />
-        <rect x={sx(map.goalMinX)} y={sy(map.fieldHeight)}
-          width={(map.goalMaxX - map.goalMinX) * CELL_SIZE} height={CELL_SIZE}
+        <rect x={sx(bg.min)} y={sy(map.fieldHeight)}
+          width={(bg.max - bg.min) * CELL_SIZE} height={CELL_SIZE}
           fill="rgba(239,68,68,0.15)" />
 
         {/* ── Grid lines ── */}
@@ -106,8 +112,8 @@ export default function GameBoard() {
         <path d={goalBoxPath('bottom', map)} fill="none" stroke="#ef4444" strokeWidth={2.5} strokeLinecap="round" />
 
         {/* ── Goal labels ── */}
-        <text x={goalCenterX} y={sy(-1) + CELL_SIZE / 2 + 5} textAnchor="middle" fontSize={11} fill="#3b82f6" fontWeight="bold">P1 Goal</text>
-        <text x={goalCenterX} y={sy(map.fieldHeight + 1) - CELL_SIZE / 2 + 8} textAnchor="middle" fontSize={11} fill="#ef4444" fontWeight="bold">P2 Goal</text>
+        <text x={topGoalCenterX}    y={sy(-1) + CELL_SIZE / 2 + 5} textAnchor="middle" fontSize={11} fill="#3b82f6" fontWeight="bold">P1 Goal</text>
+        <text x={bottomGoalCenterX} y={sy(map.fieldHeight + 1) - CELL_SIZE / 2 + 8} textAnchor="middle" fontSize={11} fill="#ef4444" fontWeight="bold">P2 Goal</text>
 
         {/* ── Wall edges (inner obstacles) ── */}
         {wallSegs.map((w, i) => (
