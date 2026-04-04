@@ -21,7 +21,6 @@ export default function SetupScreen() {
   const [humanPlayer, setHumanPlayer] = useState<Player>(1);
   const [selectedMap, setSelectedMap] = useState<MapConfig>(MAPS[0]);
   const [depth, setDepth] = useState(3);
-  const [rulesOpen, setRulesOpen] = useState(false);
 
   function handleStart() {
     const aiPlayer: Player = humanPlayer === 1 ? 2 : 1;
@@ -67,21 +66,6 @@ export default function SetupScreen() {
         <Text style={styles.title}>⚽ Line Ball</Text>
       </View>
       <ScrollView contentContainerStyle={styles.body}>
-        <View style={styles.rulesBox}>
-          <Pressable onPress={() => setRulesOpen((v) => !v)}>
-            <Text style={styles.rulesToggle}>{rulesOpen ? '▼' : '▶'} How to play</Text>
-          </Pressable>
-          {rulesOpen && (
-            <View style={styles.rulesList}>
-              <Text style={styles.rulesItem}>1. Players alternate drawing a line from the ball to any adjacent point (8 directions).</Text>
-              <Text style={styles.rulesItem}>2. <Text style={{ fontWeight: 'bold' }}>Bounce:</Text> if the destination already has lines or touches a wall, the same player must keep moving.</Text>
-              <Text style={styles.rulesItem}>3. You cannot redraw an existing line or cross a boundary.</Text>
-              <Text style={styles.rulesItem}>4. Score by moving the ball into your opponent's goal.</Text>
-              <Text style={styles.rulesItem}>5. No valid moves = loss.</Text>
-              <Text style={styles.rulesTip}>🔵 Blue → bottom goal · 🔴 Red → top goal</Text>
-            </View>
-          )}
-        </View>
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>Game Mode</Text>
           <View style={styles.optionRow}>
@@ -118,6 +102,17 @@ export default function SetupScreen() {
             </View>
           </>
         )}
+        <View style={styles.rulesBox}>
+          <Text style={styles.rulesToggle}>How to play</Text>
+          <View style={styles.rulesList}>
+            <Text style={styles.rulesItem}>1. Players alternate drawing a line from the ball to any adjacent point (8 directions).</Text>
+            <Text style={styles.rulesItem}>2. <Text style={{ fontWeight: 'bold' }}>Bounce:</Text> if the destination already has lines or touches a wall, the same player must keep moving.</Text>
+            <Text style={styles.rulesItem}>3. You cannot redraw an existing line or cross a boundary.</Text>
+            <Text style={styles.rulesItem}>4. Score by moving the ball into your opponent's goal.</Text>
+            <Text style={styles.rulesItem}>5. No valid moves = loss.</Text>
+            <Text style={styles.rulesTip}>🔵 Blue → bottom goal · 🔴 Red → top goal</Text>
+          </View>
+        </View>
       </ScrollView>
       <View style={styles.footer}>
         <Pressable style={styles.startBtn} onPress={() => setStep('map')}>
