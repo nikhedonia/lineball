@@ -18,6 +18,12 @@ export interface MapConfig {
   walls: string[];      // serialised wall edges (pre-drawn inner obstacles)
   /** Colour used to render wall edges. Defaults to purple. */
   wallColor?: string;
+  /**
+   * Rectangular regions where NO grid points are valid.
+   * Used to create truly impenetrable boundary walls (e.g. the Z-shape).
+   * Any move whose destination falls inside one of these zones is rejected.
+   */
+  blockedZones?: Array<{ x1: number; y1: number; x2: number; y2: number }>;
 }
 
 // ── Local edge serialisation (avoids circular import with gameLogic) ──────────
@@ -128,25 +134,28 @@ export const MAPS: MapConfig[] = [
     ],
   },
 
-  // 7. Zigzag — tight Z-shaped field: top goal right, bottom goal left
-  //    Two L-shaped wall clusters seal the top-left and bottom-right dead zones,
-  //    leaving only a narrow Z corridor.
+  // 7. Zigzag — true Z-shaped field: top goal top-right, bottom goal bottom-left.
+  //    Dead-zone corners are FULLY inaccessible (blockedZones) so no diagonal
+  //    sneaking is possible.  The sealing walls also trigger bounces at corners.
   {
     id: 'zigzag',
     name: 'Zigzag',
-    description: '7 × 11 · tight Z corridor',
-    fieldWidth: 6, fieldHeight: 10,
-    goalMinX: 0,        goalMaxX: 2,    // bottom goal — left side (P1 scores here)
-    topGoalMinX: 4,     topGoalMaxX: 6, // top goal    — right side (P2 scores here)
-    ballStart: { x: 3, y: 5 },
-    wallColor: '#374151',               // boundary-style dark lines, not purple
+    description: '9 × 13 · Z-shaped field',
+    fieldWidth: 8, fieldHeight: 12,
+    goalMinX: 1,        goalMaxX: 3,    // bottom goal — left side  (P1 scores here)
+    topGoalMinX: 5,     topGoalMaxX: 7, // top goal    — right side (P2 scores here)
+    ballStart: { x: 4, y: 6 },
+    wallColor: '#374151',               // boundary-style dark lines
     walls: [
-      // seal top-left dead zone (x 0-3, y 0-4)
-      ...wallLine(0, 4, 3, 4),  // bottom edge of dead zone
-      ...wallLine(3, 0, 3, 4),  // right edge  of dead zone
-      // seal bottom-right dead zone (x 3-6, y 6-10)
-      ...wallLine(3, 6, 6, 6),  // top edge   of dead zone
-      ...wallLine(3, 6, 3, 10), // left edge  of dead zone
+      ...wallLine(0, 4, 4, 4),   // seal top-left dead zone — bottom edge
+      ...wallLine(4, 0, 4, 4),   // seal top-left dead zone — right edge
+      ...wallLine(4, 8, 8, 8),   // seal bottom-right dead zone — top edge
+      ...wallLine(4, 8, 4, 12),  // seal bottom-right dead zone — left edge
+    ],
+    // Points inside the dead zones — unreachable even via diagonals.
+    blockedZones: [
+      { x1: 0, y1: 0, x2: 3, y2: 3 },   // top-left corner
+      { x1: 5, y1: 9, x2: 8, y2: 12 },  // bottom-right corner
     ],
   },
 ];

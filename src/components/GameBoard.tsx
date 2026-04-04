@@ -106,6 +106,14 @@ export default function GameBoard() {
             stroke="#d1d5db" strokeWidth={0.5} />
         ))}
 
+        {/* ── Blocked dead zones (solid fill hides grid, forms Z boundary) ── */}
+        {map.blockedZones?.map((z, i) => (
+          <rect key={`zone-${i}`}
+            x={sx(z.x1)} y={sy(z.y1)}
+            width={(z.x2 - z.x1) * CELL_SIZE} height={(z.y2 - z.y1) * CELL_SIZE}
+            fill="#e5e7eb" />
+        ))}
+
         {/* ── Field boundary + goal boxes ── */}
         <path d={fieldBoundaryPath(map)} fill="none" stroke="#374151" strokeWidth={2.5} strokeLinecap="round" />
         <path d={goalBoxPath('top', map)} fill="none" stroke="#3b82f6" strokeWidth={2.5} strokeLinecap="round" />

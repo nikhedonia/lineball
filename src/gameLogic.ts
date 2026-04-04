@@ -78,6 +78,12 @@ export function getPredrawnEdges(map: MapConfig): Set<string> {
 // ── Point validity ────────────────────────────────────────────────────────────
 
 export function isValidPoint(x: number, y: number, map: MapConfig): boolean {
+  // Explicitly blocked dead-zone rectangles (e.g. Z-shaped field corners).
+  if (map.blockedZones) {
+    for (const z of map.blockedZones) {
+      if (x >= z.x1 && x <= z.x2 && y >= z.y1 && y <= z.y2) return false;
+    }
+  }
   if (x >= 0 && x <= map.fieldWidth && y >= 0 && y <= map.fieldHeight) return true;
   const tg = topGoal(map);
   const bg = bottomGoal(map);

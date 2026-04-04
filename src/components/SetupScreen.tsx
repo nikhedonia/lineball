@@ -166,6 +166,13 @@ function MapPreview({ map }: { map: MapConfig }) {
       {/* field */}
       <rect x={px(0)} y={py(0)} width={map.fieldWidth} height={map.fieldHeight}
         fill="#e8f4e8" stroke="#374151" strokeWidth={0.6} />
+      {/* blocked dead zones */}
+      {map.blockedZones?.map((z, i) => (
+        <rect key={i}
+          x={px(z.x1)} y={py(z.y1)}
+          width={z.x2 - z.x1} height={z.y2 - z.y1}
+          fill="#d1d5db" />
+      ))}
       {/* bottom goal */}
       <rect x={px(bgMin)} y={py(map.fieldHeight) - 0.1} width={bgMax - bgMin} height={1.5}
         fill="rgba(239,68,68,0.35)" stroke="#ef4444" strokeWidth={0.4} />
