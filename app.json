@@ -1,0 +1,15 @@
+{
+  "expo": {
+    "name": "Lineball",
+    "slug": "lineball",
+    "version": "1.0.0",
+    "platforms": ["web", "ios", "android"],
+    "web": {
+      "output": "single",
+      "bundler": "metro"
+    },
+    "experiments": {
+      "baseUrl": "/lineball/"
+    }
+  }
+}

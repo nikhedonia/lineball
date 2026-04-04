@@ -1,25 +1,27 @@
 import { useState } from 'react';
+import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native';
+import Svg, { Rect, Line, Circle } from 'react-native-svg';
 import { MAPS } from '../maps';
 import type { MapConfig } from '../maps';
 import type { GameMode, Player } from '../types';
 import { useGameStore } from '../store/gameStore';
 
 const DIFFICULTIES = [
-  { label: 'Easy',   depth: 1 },
+  { label: 'Easy', depth: 1 },
   { label: 'Medium', depth: 3 },
-  { label: 'Hard',   depth: 5 },
+  { label: 'Hard', depth: 5 },
 ];
 
 type Step = 'settings' | 'map';
 
 export default function SetupScreen() {
   const startGame = useGameStore((s) => s.startGame);
-
-  const [step, setStep]               = useState<Step>('settings');
-  const [mode, setMode]               = useState<GameMode>('ai');
+  const [step, setStep] = useState<Step>('settings');
+  const [mode, setMode] = useState<GameMode>('ai');
   const [humanPlayer, setHumanPlayer] = useState<Player>(1);
   const [selectedMap, setSelectedMap] = useState<MapConfig>(MAPS[0]);
-  const [depth, setDepth]             = useState(3);
+  const [depth, setDepth] = useState(3);
+  const [rulesOpen, setRulesOpen] = useState(false);
 
   function handleStart() {
     const aiPlayer: Player = humanPlayer === 1 ? 2 : 1;
@@ -28,119 +30,110 @@ export default function SetupScreen() {
 
   if (step === 'map') {
     return (
-      <div className="setup-screen">
-        <header className="setup-header">
-          <button className="setup-back-btn" onClick={() => setStep('settings')}>← Back</button>
-          <span className="setup-header-title">Choose Map</span>
-          <span />
-        </header>
-
-        <div className="setup-body">
-          <div className="map-grid">
+      <View style={styles.screen}>
+        <View style={styles.header}>
+          <Pressable style={styles.backBtn} onPress={() => setStep('settings')}>
+            <Text style={styles.backBtnText}>← Back</Text>
+          </Pressable>
+          <Text style={styles.headerTitle}>Choose Map</Text>
+          <View style={{ width: 60 }} />
+        </View>
+        <ScrollView contentContainerStyle={styles.body}>
+          <View style={styles.mapGrid}>
             {MAPS.map((m) => (
-              <button
+              <Pressable
                 key={m.id}
-                className={`map-btn ${selectedMap.id === m.id ? 'active' : ''}`}
-                onClick={() => setSelectedMap(m)}
+                style={[styles.mapBtn, selectedMap.id === m.id && styles.mapBtnActive]}
+                onPress={() => setSelectedMap(m)}
               >
                 <MapPreview map={m} />
-                <span className="map-name">{m.name}</span>
-              </button>
+                <Text style={styles.mapName}>{m.name}</Text>
+              </Pressable>
             ))}
-          </div>
-        </div>
-
-        <footer className="setup-footer">
-          <button className="start-btn" onClick={handleStart}>
-            ▶ Start Game
-          </button>
-        </footer>
-      </div>
+          </View>
+        </ScrollView>
+        <View style={styles.footer}>
+          <Pressable style={styles.startBtn} onPress={handleStart}>
+            <Text style={styles.startBtnText}>▶ Start Game</Text>
+          </Pressable>
+        </View>
+      </View>
     );
   }
 
   return (
-    <div className="setup-screen">
-      <header className="setup-header settings-header">
-        <h1 className="setup-title">⚽ Line Ball</h1>
-      </header>
-
-      <div className="setup-body">
-        {/* ── How to Play ── */}
-        <details className="rules-box">
-          <summary>How to play</summary>
-          <ol className="rules-list">
-            <li>Players alternate drawing a line from the ball to any adjacent point (8 directions).</li>
-            <li><strong>Bounce:</strong> if the destination already has lines or touches a wall, the same player <em>must</em> keep moving.</li>
-            <li>You cannot redraw an existing line or cross a boundary.</li>
-            <li>Score by moving the ball into your opponent's goal.</li>
-            <li>No valid moves = loss.</li>
-          </ol>
-          <p className="rules-tip">🔵 Blue → bottom goal &nbsp;·&nbsp; 🔴 Red → top goal</p>
-        </details>
-
-        {/* ── Game Mode ── */}
-        <section className="setup-section">
-          <h2 className="setup-label">Game Mode</h2>
-          <div className="option-row">
-            <button className={`option-btn ${mode === 'ai' ? 'active' : ''}`} onClick={() => setMode('ai')}>
-              🤖 vs Computer
-            </button>
-            <button className={`option-btn ${mode === '2p' ? 'active' : ''}`} onClick={() => setMode('2p')}>
-              👥 Two Players
-            </button>
-          </div>
-        </section>
-
-        {/* ── AI options ── */}
+    <View style={styles.screen}>
+      <View style={[styles.header, styles.settingsHeader]}>
+        <Text style={styles.title}>⚽ Line Ball</Text>
+      </View>
+      <ScrollView contentContainerStyle={styles.body}>
+        <View style={styles.rulesBox}>
+          <Pressable onPress={() => setRulesOpen((v) => !v)}>
+            <Text style={styles.rulesToggle}>{rulesOpen ? '▼' : '▶'} How to play</Text>
+          </Pressable>
+          {rulesOpen && (
+            <View style={styles.rulesList}>
+              <Text style={styles.rulesItem}>1. Players alternate drawing a line from the ball to any adjacent point (8 directions).</Text>
+              <Text style={styles.rulesItem}>2. <Text style={{ fontWeight: 'bold' }}>Bounce:</Text> if the destination already has lines or touches a wall, the same player must keep moving.</Text>
+              <Text style={styles.rulesItem}>3. You cannot redraw an existing line or cross a boundary.</Text>
+              <Text style={styles.rulesItem}>4. Score by moving the ball into your opponent's goal.</Text>
+              <Text style={styles.rulesItem}>5. No valid moves = loss.</Text>
+              <Text style={styles.rulesTip}>🔵 Blue → bottom goal · 🔴 Red → top goal</Text>
+            </View>
+          )}
+        </View>
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>Game Mode</Text>
+          <View style={styles.optionRow}>
+            <Pressable style={[styles.optionBtn, mode === 'ai' && styles.optionBtnActive]} onPress={() => setMode('ai')}>
+              <Text style={[styles.optionBtnText, mode === 'ai' && styles.optionBtnTextActive]}>🤖 vs Computer</Text>
+            </Pressable>
+            <Pressable style={[styles.optionBtn, mode === '2p' && styles.optionBtnActive]} onPress={() => setMode('2p')}>
+              <Text style={[styles.optionBtnText, mode === '2p' && styles.optionBtnTextActive]}>👥 Two Players</Text>
+            </Pressable>
+          </View>
+        </View>
         {mode === 'ai' && (
           <>
-            <section className="setup-section">
-              <h2 className="setup-label">You play as</h2>
-              <div className="option-row">
-                <button className={`option-btn p1 ${humanPlayer === 1 ? 'active' : ''}`} onClick={() => setHumanPlayer(1)}>
-                  🔵 Blue <small>attacks ↓</small>
-                </button>
-                <button className={`option-btn p2 ${humanPlayer === 2 ? 'active' : ''}`} onClick={() => setHumanPlayer(2)}>
-                  🔴 Red <small>attacks ↑</small>
-                </button>
-              </div>
-            </section>
-
-            <section className="setup-section">
-              <h2 className="setup-label">Difficulty</h2>
-              <div className="option-row">
+            <View style={styles.section}>
+              <Text style={styles.sectionLabel}>You play as</Text>
+              <View style={styles.optionRow}>
+                <Pressable style={[styles.optionBtn, styles.optionBtnP1, humanPlayer === 1 && styles.optionBtnActive]} onPress={() => setHumanPlayer(1)}>
+                  <Text style={[styles.optionBtnText, humanPlayer === 1 && styles.optionBtnTextActive]}>🔵 Blue  attacks ↓</Text>
+                </Pressable>
+                <Pressable style={[styles.optionBtn, styles.optionBtnP2, humanPlayer === 2 && styles.optionBtnActive]} onPress={() => setHumanPlayer(2)}>
+                  <Text style={[styles.optionBtnText, humanPlayer === 2 && styles.optionBtnTextActive]}>🔴 Red  attacks ↑</Text>
+                </Pressable>
+              </View>
+            </View>
+            <View style={styles.section}>
+              <Text style={styles.sectionLabel}>Difficulty</Text>
+              <View style={styles.optionRow}>
                 {DIFFICULTIES.map((d) => (
-                  <button
-                    key={d.depth}
-                    className={`option-btn ${depth === d.depth ? 'active' : ''}`}
-                    onClick={() => setDepth(d.depth)}
-                  >
-                    {d.label}
-                  </button>
+                  <Pressable key={d.depth} style={[styles.optionBtn, depth === d.depth && styles.optionBtnActive]} onPress={() => setDepth(d.depth)}>
+                    <Text style={[styles.optionBtnText, depth === d.depth && styles.optionBtnTextActive]}>{d.label}</Text>
+                  </Pressable>
                 ))}
-              </div>
-            </section>
+              </View>
+            </View>
           </>
         )}
-      </div>
-
-      <footer className="setup-footer">
-        <button className="start-btn" onClick={() => setStep('map')}>
-          Choose Map →
-        </button>
-      </footer>
-    </div>
+      </ScrollView>
+      <View style={styles.footer}>
+        <Pressable style={styles.startBtn} onPress={() => setStep('map')}>
+          <Text style={styles.startBtnText}>Choose Map →</Text>
+        </Pressable>
+      </View>
+    </View>
   );
 }
 
 function MapPreview({ map }: { map: MapConfig }) {
   const pad = 4;
   const vw = map.fieldWidth + pad * 2;
-  const vh = map.fieldHeight + pad * 2 + 3; // +3 for goal boxes
+  const vh = map.fieldHeight + pad * 2 + 3;
   const px = (x: number) => pad + x;
-  const py = (y: number) => pad + 1.5 + y;   // +1.5 offset for top goal box
-
+  const py = (y: number) => pad + 1.5 + y;
   const wallSegs: Array<{ x1: number; y1: number; x2: number; y2: number }> = [];
   for (const key of map.walls) {
     const [aPart, bPart] = key.split('|');
@@ -148,41 +141,55 @@ function MapPreview({ map }: { map: MapConfig }) {
     const [x2, y2] = bPart.split('_').map(Number);
     wallSegs.push({ x1, y1, x2, y2 });
   }
-
-  const tgMin = map.topGoalMinX    ?? map.goalMinX;
-  const tgMax = map.topGoalMaxX    ?? map.goalMaxX;
+  const tgMin = map.topGoalMinX ?? map.goalMinX;
+  const tgMax = map.topGoalMaxX ?? map.goalMaxX;
   const bgMin = map.bottomGoalMinX ?? map.goalMinX;
   const bgMax = map.bottomGoalMaxX ?? map.goalMaxX;
 
   return (
-    <svg
-      viewBox={`0 0 ${vw} ${vh}`}
-      className="map-preview-svg"
-      preserveAspectRatio="xMidYMid meet"
-    >
-      {/* top goal */}
-      <rect x={px(tgMin)} y={pad - 0.5} width={tgMax - tgMin} height={1.5}
-        fill="rgba(59,130,246,0.35)" stroke="#3b82f6" strokeWidth={0.4} />
-      {/* field */}
-      <rect x={px(0)} y={py(0)} width={map.fieldWidth} height={map.fieldHeight}
-        fill="#e8f4e8" stroke="#374151" strokeWidth={0.6} />
-      {/* blocked dead zones */}
+    <Svg viewBox={`0 0 ${vw} ${vh}`} width={80} height={60} preserveAspectRatio="xMidYMid meet">
+      <Rect x={px(tgMin)} y={pad - 0.5} width={tgMax - tgMin} height={1.5} fill="rgba(59,130,246,0.35)" stroke="#3b82f6" strokeWidth={0.4} />
+      <Rect x={px(0)} y={py(0)} width={map.fieldWidth} height={map.fieldHeight} fill="#e8f4e8" stroke="#374151" strokeWidth={0.6} />
       {(map.deadZoneVisuals ?? map.blockedZones)?.map((z, i) => (
-        <rect key={i}
-          x={px(z.x1)} y={py(z.y1)}
-          width={z.x2 - z.x1} height={z.y2 - z.y1}
-          fill="#d1d5db" />
+        <Rect key={i} x={px(z.x1)} y={py(z.y1)} width={z.x2 - z.x1} height={z.y2 - z.y1} fill="#d1d5db" />
       ))}
-      {/* bottom goal */}
-      <rect x={px(bgMin)} y={py(map.fieldHeight) - 0.1} width={bgMax - bgMin} height={1.5}
-        fill="rgba(239,68,68,0.35)" stroke="#ef4444" strokeWidth={0.4} />
-      {/* walls */}
+      <Rect x={px(bgMin)} y={py(map.fieldHeight) - 0.1} width={bgMax - bgMin} height={1.5} fill="rgba(239,68,68,0.35)" stroke="#ef4444" strokeWidth={0.4} />
       {wallSegs.map((w, i) => (
-        <line key={i} x1={px(w.x1)} y1={py(w.y1)} x2={px(w.x2)} y2={py(w.y2)}
-          stroke={map.wallColor ?? '#7c3aed'} strokeWidth={0.7} strokeLinecap="round" />
+        <Line key={i} x1={px(w.x1)} y1={py(w.y1)} x2={px(w.x2)} y2={py(w.y2)} stroke={map.wallColor ?? '#7c3aed'} strokeWidth={0.7} strokeLinecap="round" />
       ))}
-      {/* ball */}
-      <circle cx={px(map.ballStart.x)} cy={py(map.ballStart.y)} r={1} fill="#f59e0b" />
-    </svg>
+      <Circle cx={px(map.ballStart.x)} cy={py(map.ballStart.y)} r={1} fill="#f59e0b" />
+    </Svg>
   );
 }
+
+const styles = StyleSheet.create({
+  screen: { flex: 1, backgroundColor: '#f9fafb' },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 12, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#e5e7eb' },
+  settingsHeader: { justifyContent: 'center' },
+  title: { fontSize: 24, fontWeight: 'bold', color: '#111827' },
+  headerTitle: { fontSize: 18, fontWeight: '600', color: '#111827' },
+  backBtn: { paddingHorizontal: 10, paddingVertical: 6, backgroundColor: '#e5e7eb', borderRadius: 6 },
+  backBtnText: { fontSize: 14, color: '#374151' },
+  body: { padding: 16 },
+  rulesBox: { backgroundColor: '#fff', borderRadius: 8, padding: 12, marginBottom: 16, borderWidth: 1, borderColor: '#e5e7eb' },
+  rulesToggle: { fontSize: 14, fontWeight: '600', color: '#374151' },
+  rulesList: { marginTop: 8 },
+  rulesItem: { fontSize: 13, color: '#4b5563', marginBottom: 4 },
+  rulesTip: { fontSize: 13, color: '#6b7280', marginTop: 4, fontStyle: 'italic' },
+  section: { marginBottom: 16 },
+  sectionLabel: { fontSize: 14, fontWeight: '600', color: '#374151', marginBottom: 8 },
+  optionRow: { flexDirection: 'row', gap: 8 },
+  optionBtn: { flex: 1, paddingVertical: 10, paddingHorizontal: 12, backgroundColor: '#fff', borderRadius: 8, borderWidth: 1, borderColor: '#d1d5db', alignItems: 'center' },
+  optionBtnActive: { backgroundColor: '#3b82f6', borderColor: '#3b82f6' },
+  optionBtnP1: { borderColor: '#3b82f6' },
+  optionBtnP2: { borderColor: '#ef4444' },
+  optionBtnText: { fontSize: 13, color: '#374151', fontWeight: '500' },
+  optionBtnTextActive: { color: '#fff' },
+  mapGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  mapBtn: { width: 120, padding: 8, backgroundColor: '#fff', borderRadius: 8, borderWidth: 1, borderColor: '#d1d5db', alignItems: 'center' },
+  mapBtnActive: { borderColor: '#3b82f6', borderWidth: 2 },
+  mapName: { fontSize: 12, color: '#374151', marginTop: 4, textAlign: 'center' },
+  footer: { padding: 16, backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#e5e7eb' },
+  startBtn: { backgroundColor: '#16a34a', borderRadius: 8, paddingVertical: 14, alignItems: 'center' },
+  startBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+});
