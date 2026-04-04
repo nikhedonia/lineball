@@ -172,7 +172,7 @@ function MapPreview({ map }: { map: MapConfig }) {
       {/* walls */}
       {wallSegs.map((w, i) => (
         <line key={i} x1={px(w.x1)} y1={py(w.y1)} x2={px(w.x2)} y2={py(w.y2)}
-          stroke="#7c3aed" strokeWidth={0.7} strokeLinecap="round" />
+          stroke={map.wallColor ?? '#7c3aed'} strokeWidth={0.7} strokeLinecap="round" />
       ))}
       {/* ball */}
       <circle cx={px(map.ballStart.x)} cy={py(map.ballStart.y)} r={1} fill="#f59e0b" />

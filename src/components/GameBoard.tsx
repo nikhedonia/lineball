@@ -119,7 +119,7 @@ export default function GameBoard() {
         {wallSegs.map((w, i) => (
           <line key={`wall-${i}`}
             x1={sx(w.x1)} y1={sy(w.y1)} x2={sx(w.x2)} y2={sy(w.y2)}
-            stroke="#7c3aed" strokeWidth={3} strokeLinecap="round" />
+            stroke={map.wallColor ?? '#7c3aed'} strokeWidth={3} strokeLinecap="round" />
         ))}
 
         {/* ── Used edges ── */}

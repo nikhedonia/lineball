@@ -16,6 +16,8 @@ export interface MapConfig {
   bottomGoalMaxX?: number;
   ballStart: Point;
   walls: string[];      // serialised wall edges (pre-drawn inner obstacles)
+  /** Colour used to render wall edges. Defaults to purple. */
+  wallColor?: string;
 }
 
 // ── Local edge serialisation (avoids circular import with gameLogic) ──────────
@@ -126,21 +128,25 @@ export const MAPS: MapConfig[] = [
     ],
   },
 
-  // 7. Zigzag — Z-shaped field: top goal right, bottom goal left
-  //    Interior walls seal top-left & bottom-right corners leaving a Z corridor.
+  // 7. Zigzag — tight Z-shaped field: top goal right, bottom goal left
+  //    Two L-shaped wall clusters seal the top-left and bottom-right dead zones,
+  //    leaving only a narrow Z corridor.
   {
     id: 'zigzag',
     name: 'Zigzag',
-    description: '9 × 13 · Z-shaped field',
-    fieldWidth: 8, fieldHeight: 12,
-    goalMinX: 1,        goalMaxX: 3,    // bottom goal — left side (P1 scores here)
-    topGoalMinX: 5,     topGoalMaxX: 7, // top goal    — right side (P2 scores here)
-    ballStart: { x: 4, y: 6 },
+    description: '7 × 11 · tight Z corridor',
+    fieldWidth: 6, fieldHeight: 10,
+    goalMinX: 0,        goalMaxX: 2,    // bottom goal — left side (P1 scores here)
+    topGoalMinX: 4,     topGoalMaxX: 6, // top goal    — right side (P2 scores here)
+    ballStart: { x: 3, y: 5 },
+    wallColor: '#374151',               // boundary-style dark lines, not purple
     walls: [
-      ...wallLine(0, 4, 4, 4),   // top-left corner: bottom edge
-      ...wallLine(4, 0, 4, 4),   // top-left corner: right edge
-      ...wallLine(4, 8, 8, 8),   // bottom-right corner: top edge
-      ...wallLine(4, 8, 4, 12),  // bottom-right corner: left edge
+      // seal top-left dead zone (x 0-3, y 0-4)
+      ...wallLine(0, 4, 3, 4),  // bottom edge of dead zone
+      ...wallLine(3, 0, 3, 4),  // right edge  of dead zone
+      // seal bottom-right dead zone (x 3-6, y 6-10)
+      ...wallLine(3, 6, 6, 6),  // top edge   of dead zone
+      ...wallLine(3, 6, 3, 10), // left edge  of dead zone
     ],
   },
 ];
