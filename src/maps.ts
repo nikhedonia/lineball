@@ -24,6 +24,12 @@ export interface MapConfig {
    * Any move whose destination falls inside one of these zones is rejected.
    */
   blockedZones?: Array<{ x1: number; y1: number; x2: number; y2: number }>;
+  /**
+   * Visual-only grey fills for dead zones.  When present, used for rendering
+   * instead of blockedZones so the fill can align exactly with the sealing
+   * wall lines (which sit one grid unit beyond the last blocked point).
+   */
+  deadZoneVisuals?: Array<{ x1: number; y1: number; x2: number; y2: number }>;
 }
 
 // ── Local edge serialisation (avoids circular import with gameLogic) ──────────
@@ -156,6 +162,11 @@ export const MAPS: MapConfig[] = [
     blockedZones: [
       { x1: 0, y1: 0, x2: 3, y2: 3 },   // top-left corner
       { x1: 5, y1: 9, x2: 8, y2: 12 },  // bottom-right corner
+    ],
+    // Visual fills aligned with the sealing wall lines (one cell larger each side).
+    deadZoneVisuals: [
+      { x1: 0, y1: 0, x2: 4, y2: 4 },   // extends to wall at x=4, y=4
+      { x1: 4, y1: 8, x2: 8, y2: 12 },  // extends to wall at x=4, y=8
     ],
   },
 ];

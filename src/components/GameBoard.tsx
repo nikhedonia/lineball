@@ -107,7 +107,7 @@ export default function GameBoard() {
         ))}
 
         {/* ── Blocked dead zones (solid fill hides grid, forms Z boundary) ── */}
-        {map.blockedZones?.map((z, i) => (
+        {(map.deadZoneVisuals ?? map.blockedZones)?.map((z, i) => (
           <rect key={`zone-${i}`}
             x={sx(z.x1)} y={sy(z.y1)}
             width={(z.x2 - z.x1) * CELL_SIZE} height={(z.y2 - z.y1) * CELL_SIZE}

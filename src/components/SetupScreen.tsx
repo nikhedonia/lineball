@@ -167,7 +167,7 @@ function MapPreview({ map }: { map: MapConfig }) {
       <rect x={px(0)} y={py(0)} width={map.fieldWidth} height={map.fieldHeight}
         fill="#e8f4e8" stroke="#374151" strokeWidth={0.6} />
       {/* blocked dead zones */}
-      {map.blockedZones?.map((z, i) => (
+      {(map.deadZoneVisuals ?? map.blockedZones)?.map((z, i) => (
         <rect key={i}
           x={px(z.x1)} y={py(z.y1)}
           width={z.x2 - z.x1} height={z.y2 - z.y1}
