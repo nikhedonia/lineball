@@ -42,14 +42,18 @@ function Game() {
 
 const styles = StyleSheet.create({
   app: { flex: 1, alignItems: 'center', padding: 10 },
+  safeArea: { flex: 1, backgroundColor: '#f3f4f6', alignItems: 'center' },
+  centeredContainer: { flex: 1, width: '100%', maxWidth: 600 },
 });
 
 export default function App() {
   const screen = useGameStore((s) => s.screen);
   return (
     <SafeAreaProvider>
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#f3f4f6' }}>
-        {screen === 'setup' ? <SetupScreen /> : <Game />}
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.centeredContainer}>
+          {screen === 'setup' ? <SetupScreen /> : <Game />}
+        </View>
       </SafeAreaView>
     </SafeAreaProvider>
   );
