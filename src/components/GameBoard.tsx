@@ -10,8 +10,8 @@ const PLAYER_FILL: Record<number, string> = { 1: '#3b82f6', 2: '#ef4444' };
 function sx(x: number) { return PADDING + x * CELL_SIZE; }
 function sy(y: number) { return PADDING + (y + 1) * CELL_SIZE; }
 
-function svgWidth(map: MapConfig)  { return PADDING * 2 + map.fieldWidth  * CELL_SIZE; }
-function svgHeight(map: MapConfig) { return PADDING * 2 + (map.fieldHeight + 2) * CELL_SIZE; }
+function vbWidth(map: MapConfig)  { return PADDING * 2 + map.fieldWidth  * CELL_SIZE; }
+function vbHeight(map: MapConfig) { return PADDING * 2 + (map.fieldHeight + 2) * CELL_SIZE; }
 
 function allPoints(map: MapConfig): Point[] {
   const pts: Point[] = [];
@@ -59,7 +59,6 @@ export default function GameBoard() {
 
   const points = useMemo(() => allPoints(map), [map]);
 
-  // Parse wall edges once per map
   const wallSegs = useMemo(() => {
     return map.walls.map((key) => {
       const [aPart, bPart] = key.split('|');
@@ -72,74 +71,83 @@ export default function GameBoard() {
   const ballFill = PLAYER_FILL[currentPlayer];
   const goalCenterX = sx((map.goalMinX + map.goalMaxX) / 2);
 
+  const W = vbWidth(map);
+  const H = vbHeight(map);
+
   return (
-    <svg width={svgWidth(map)} height={svgHeight(map)} style={{ display: 'block', margin: '0 auto' }}>
+    /* wrapper fills remaining space in the flex column, SVG scales inside it */
+    <div className="board-wrapper">
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        className="board-svg"
+        style={{ display: 'block' }}
+      >
+        {/* ── Goal fills ── */}
+        <rect x={sx(map.goalMinX)} y={sy(-1)}
+          width={(map.goalMaxX - map.goalMinX) * CELL_SIZE} height={CELL_SIZE}
+          fill="rgba(59,130,246,0.15)" />
+        <rect x={sx(map.goalMinX)} y={sy(map.fieldHeight)}
+          width={(map.goalMaxX - map.goalMinX) * CELL_SIZE} height={CELL_SIZE}
+          fill="rgba(239,68,68,0.15)" />
 
-      {/* ── Goal fills ── */}
-      <rect x={sx(map.goalMinX)} y={sy(-1)}
-        width={(map.goalMaxX - map.goalMinX) * CELL_SIZE} height={CELL_SIZE}
-        fill="rgba(59,130,246,0.15)" />
-      <rect x={sx(map.goalMinX)} y={sy(map.fieldHeight)}
-        width={(map.goalMaxX - map.goalMinX) * CELL_SIZE} height={CELL_SIZE}
-        fill="rgba(239,68,68,0.15)" />
+        {/* ── Grid lines ── */}
+        {Array.from({ length: map.fieldHeight + 1 }, (_, y) => (
+          <line key={`hl-${y}`} x1={sx(0)} y1={sy(y)} x2={sx(map.fieldWidth)} y2={sy(y)}
+            stroke="#d1d5db" strokeWidth={0.5} />
+        ))}
+        {Array.from({ length: map.fieldWidth + 1 }, (_, x) => (
+          <line key={`vl-${x}`} x1={sx(x)} y1={sy(0)} x2={sx(x)} y2={sy(map.fieldHeight)}
+            stroke="#d1d5db" strokeWidth={0.5} />
+        ))}
 
-      {/* ── Grid lines ── */}
-      {Array.from({ length: map.fieldHeight + 1 }, (_, y) => (
-        <line key={`hl-${y}`} x1={sx(0)} y1={sy(y)} x2={sx(map.fieldWidth)} y2={sy(y)}
-          stroke="#d1d5db" strokeWidth={0.5} />
-      ))}
-      {Array.from({ length: map.fieldWidth + 1 }, (_, x) => (
-        <line key={`vl-${x}`} x1={sx(x)} y1={sy(0)} x2={sx(x)} y2={sy(map.fieldHeight)}
-          stroke="#d1d5db" strokeWidth={0.5} />
-      ))}
+        {/* ── Field boundary + goal boxes ── */}
+        <path d={fieldBoundaryPath(map)} fill="none" stroke="#374151" strokeWidth={2.5} strokeLinecap="round" />
+        <path d={goalBoxPath('top', map)} fill="none" stroke="#3b82f6" strokeWidth={2.5} strokeLinecap="round" />
+        <path d={goalBoxPath('bottom', map)} fill="none" stroke="#ef4444" strokeWidth={2.5} strokeLinecap="round" />
 
-      {/* ── Field boundary + goal boxes ── */}
-      <path d={fieldBoundaryPath(map)} fill="none" stroke="#374151" strokeWidth={2.5} strokeLinecap="round" />
-      <path d={goalBoxPath('top', map)} fill="none" stroke="#3b82f6" strokeWidth={2.5} strokeLinecap="round" />
-      <path d={goalBoxPath('bottom', map)} fill="none" stroke="#ef4444" strokeWidth={2.5} strokeLinecap="round" />
+        {/* ── Goal labels ── */}
+        <text x={goalCenterX} y={sy(-1) + CELL_SIZE / 2 + 5} textAnchor="middle" fontSize={11} fill="#3b82f6" fontWeight="bold">P1 Goal</text>
+        <text x={goalCenterX} y={sy(map.fieldHeight + 1) - CELL_SIZE / 2 + 8} textAnchor="middle" fontSize={11} fill="#ef4444" fontWeight="bold">P2 Goal</text>
 
-      {/* ── Goal labels ── */}
-      <text x={goalCenterX} y={sy(-1) + CELL_SIZE / 2 + 5} textAnchor="middle" fontSize={11} fill="#3b82f6" fontWeight="bold">P1 Goal</text>
-      <text x={goalCenterX} y={sy(map.fieldHeight + 1) - CELL_SIZE / 2 + 8} textAnchor="middle" fontSize={11} fill="#ef4444" fontWeight="bold">P2 Goal</text>
+        {/* ── Wall edges (inner obstacles) ── */}
+        {wallSegs.map((w, i) => (
+          <line key={`wall-${i}`}
+            x1={sx(w.x1)} y1={sy(w.y1)} x2={sx(w.x2)} y2={sy(w.y2)}
+            stroke="#7c3aed" strokeWidth={3} strokeLinecap="round" />
+        ))}
 
-      {/* ── Wall edges (inner obstacles) ── */}
-      {wallSegs.map((w, i) => (
-        <line key={`wall-${i}`}
-          x1={sx(w.x1)} y1={sy(w.y1)} x2={sx(w.x2)} y2={sy(w.y2)}
-          stroke="#7c3aed" strokeWidth={3} strokeLinecap="round" />
-      ))}
+        {/* ── Used edges ── */}
+        {usedEdges.map((key) => {
+          const [a, b] = deserializeEdge(key);
+          return (
+            <line key={key} x1={sx(a.x)} y1={sy(a.y)} x2={sx(b.x)} y2={sy(b.y)}
+              stroke="#111827" strokeWidth={2.5} strokeLinecap="round" />
+          );
+        })}
 
-      {/* ── Used edges ── */}
-      {usedEdges.map((key) => {
-        const [a, b] = deserializeEdge(key);
-        return (
-          <line key={key} x1={sx(a.x)} y1={sy(a.y)} x2={sx(b.x)} y2={sy(b.y)}
-            stroke="#111827" strokeWidth={2.5} strokeLinecap="round" />
-        );
-      })}
+        {/* ── Grid dots ── */}
+        {points.filter((p) => isValidPoint(p.x, p.y, map)).map((p) => (
+          <circle key={`dot-${p.x}_${p.y}`} cx={sx(p.x)} cy={sy(p.y)} r={2.5} fill="#9ca3af" />
+        ))}
 
-      {/* ── Grid dots ── */}
-      {points.filter((p) => isValidPoint(p.x, p.y, map)).map((p) => (
-        <circle key={`dot-${p.x}_${p.y}`} cx={sx(p.x)} cy={sy(p.y)} r={2.5} fill="#9ca3af" />
-      ))}
+        {/* ── Valid move targets ── */}
+        {validMoves.map((p) => (
+          <circle key={`vm-${p.x}_${p.y}`} cx={sx(p.x)} cy={sy(p.y)} r={14}
+            fill="rgba(34,197,94,0.25)" stroke="rgba(34,197,94,0.7)" strokeWidth={1.5}
+            style={{ cursor: 'pointer' }} onClick={() => move(p)} />
+        ))}
 
-      {/* ── Valid move targets ── */}
-      {validMoves.map((p) => (
-        <circle key={`vm-${p.x}_${p.y}`} cx={sx(p.x)} cy={sy(p.y)} r={14}
-          fill="rgba(34,197,94,0.25)" stroke="rgba(34,197,94,0.7)" strokeWidth={1.5}
-          style={{ cursor: 'pointer' }} onClick={() => move(p)} />
-      ))}
+        {/* ── Ball — colour matches current player ── */}
+        <circle cx={sx(ball.x)} cy={sy(ball.y)} r={9}
+          fill={isAITurn ? '#9ca3af' : ballFill}
+          stroke="#1f2937" strokeWidth={2} />
 
-      {/* ── Ball — colour matches current player ── */}
-      <circle cx={sx(ball.x)} cy={sy(ball.y)} r={9}
-        fill={isAITurn ? '#9ca3af' : ballFill}
-        stroke="#1f2937" strokeWidth={2} />
-
-      {isAITurn && (
-        <text x={sx(ball.x)} y={sy(ball.y) - 16} textAnchor="middle" fontSize={11} fill="#6b7280">
-          thinking…
-        </text>
-      )}
-    </svg>
+        {isAITurn && (
+          <text x={sx(ball.x)} y={sy(ball.y) - 16} textAnchor="middle" fontSize={11} fill="#6b7280">
+            thinking…
+          </text>
+        )}
+      </svg>
+    </div>
   );
 }

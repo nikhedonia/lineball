@@ -10,110 +10,137 @@ const DIFFICULTIES = [
   { label: 'Hard',   depth: 5 },
 ];
 
+type Step = 'settings' | 'map';
+
 export default function SetupScreen() {
   const startGame = useGameStore((s) => s.startGame);
 
-  const [mode, setMode] = useState<GameMode>('ai');       // AI is default
+  const [step, setStep]               = useState<Step>('settings');
+  const [mode, setMode]               = useState<GameMode>('ai');
   const [humanPlayer, setHumanPlayer] = useState<Player>(1);
   const [selectedMap, setSelectedMap] = useState<MapConfig>(MAPS[0]);
-  const [depth, setDepth] = useState(3);
+  const [depth, setDepth]             = useState(3);
 
   function handleStart() {
     const aiPlayer: Player = humanPlayer === 1 ? 2 : 1;
     startGame(mode, aiPlayer, selectedMap, depth);
   }
 
+  if (step === 'map') {
+    return (
+      <div className="setup-screen">
+        <header className="setup-header">
+          <button className="setup-back-btn" onClick={() => setStep('settings')}>← Back</button>
+          <span className="setup-header-title">Choose Map</span>
+          <span />
+        </header>
+
+        <div className="setup-body">
+          <div className="map-grid">
+            {MAPS.map((m) => (
+              <button
+                key={m.id}
+                className={`map-btn ${selectedMap.id === m.id ? 'active' : ''}`}
+                onClick={() => setSelectedMap(m)}
+              >
+                <MapPreview map={m} />
+                <span className="map-name">{m.name}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <footer className="setup-footer">
+          <button className="start-btn" onClick={handleStart}>
+            ▶ Start Game
+          </button>
+        </footer>
+      </div>
+    );
+  }
+
   return (
     <div className="setup-screen">
-      <h1 className="setup-title">⚽ Line Ball</h1>
+      <header className="setup-header settings-header">
+        <h1 className="setup-title">⚽ Line Ball</h1>
+      </header>
 
-      {/* ── How to Play ── */}
-      <details className="rules-box">
-        <summary>How to play</summary>
-        <ol className="rules-list">
-          <li>The ball starts at the centre. Players alternate drawing a line from the ball to any adjacent point (8 directions).</li>
-          <li><strong>Bounce rule:</strong> if the destination already has lines touching it (or sits on a wall/boundary), the same player <em>must</em> keep moving.</li>
-          <li>You cannot redraw an existing line or cross a boundary/wall segment.</li>
-          <li>Score by moving the ball into your opponent's goal at the far end of the field.</li>
-          <li>If a player has no valid moves, they lose.</li>
-        </ol>
-        <p className="rules-tip">🔵 Blue attacks the <strong>bottom</strong> goal · 🔴 Red attacks the <strong>top</strong> goal</p>
-      </details>
+      <div className="setup-body">
+        {/* ── How to Play ── */}
+        <details className="rules-box">
+          <summary>How to play</summary>
+          <ol className="rules-list">
+            <li>Players alternate drawing a line from the ball to any adjacent point (8 directions).</li>
+            <li><strong>Bounce:</strong> if the destination already has lines or touches a wall, the same player <em>must</em> keep moving.</li>
+            <li>You cannot redraw an existing line or cross a boundary.</li>
+            <li>Score by moving the ball into your opponent's goal.</li>
+            <li>No valid moves = loss.</li>
+          </ol>
+          <p className="rules-tip">🔵 Blue → bottom goal &nbsp;·&nbsp; 🔴 Red → top goal</p>
+        </details>
 
-      {/* ── Game Mode ── */}
-      <section className="setup-section">
-        <h2>Game Mode</h2>
-        <div className="option-row">
-          <button className={`option-btn ${mode === 'ai' ? 'active' : ''}`} onClick={() => setMode('ai')}>
-            🤖 vs Computer
-          </button>
-          <button className={`option-btn ${mode === '2p' ? 'active' : ''}`} onClick={() => setMode('2p')}>
-            👥 Two Players
-          </button>
-        </div>
-      </section>
-
-      {/* ── AI options ── */}
-      {mode === 'ai' && (
-        <>
-          <section className="setup-section">
-            <h2>You play as</h2>
-            <div className="option-row">
-              <button className={`option-btn p1 ${humanPlayer === 1 ? 'active' : ''}`} onClick={() => setHumanPlayer(1)}>
-                🔵 Player 1 (Blue)<br /><small>Attacks ↓ bottom</small>
-              </button>
-              <button className={`option-btn p2 ${humanPlayer === 2 ? 'active' : ''}`} onClick={() => setHumanPlayer(2)}>
-                🔴 Player 2 (Red)<br /><small>Attacks ↑ top</small>
-              </button>
-            </div>
-          </section>
-
-          <section className="setup-section">
-            <h2>Difficulty</h2>
-            <div className="option-row">
-              {DIFFICULTIES.map((d) => (
-                <button
-                  key={d.depth}
-                  className={`option-btn ${depth === d.depth ? 'active' : ''}`}
-                  onClick={() => setDepth(d.depth)}
-                >
-                  {d.label}
-                </button>
-              ))}
-            </div>
-          </section>
-        </>
-      )}
-
-      {/* ── Map ── */}
-      <section className="setup-section">
-        <h2>Map</h2>
-        <div className="map-grid">
-          {MAPS.map((m) => (
-            <button key={m.id} className={`map-btn ${selectedMap.id === m.id ? 'active' : ''}`} onClick={() => setSelectedMap(m)}>
-              <MapPreview map={m} />
-              <span className="map-name">{m.name}</span>
-              <span className="map-desc">{m.description}</span>
+        {/* ── Game Mode ── */}
+        <section className="setup-section">
+          <h2 className="setup-label">Game Mode</h2>
+          <div className="option-row">
+            <button className={`option-btn ${mode === 'ai' ? 'active' : ''}`} onClick={() => setMode('ai')}>
+              🤖 vs Computer
             </button>
-          ))}
-        </div>
-      </section>
+            <button className={`option-btn ${mode === '2p' ? 'active' : ''}`} onClick={() => setMode('2p')}>
+              👥 Two Players
+            </button>
+          </div>
+        </section>
 
-      <button className="start-btn" onClick={handleStart}>
-        Start Game
-      </button>
+        {/* ── AI options ── */}
+        {mode === 'ai' && (
+          <>
+            <section className="setup-section">
+              <h2 className="setup-label">You play as</h2>
+              <div className="option-row">
+                <button className={`option-btn p1 ${humanPlayer === 1 ? 'active' : ''}`} onClick={() => setHumanPlayer(1)}>
+                  🔵 Blue <small>attacks ↓</small>
+                </button>
+                <button className={`option-btn p2 ${humanPlayer === 2 ? 'active' : ''}`} onClick={() => setHumanPlayer(2)}>
+                  🔴 Red <small>attacks ↑</small>
+                </button>
+              </div>
+            </section>
+
+            <section className="setup-section">
+              <h2 className="setup-label">Difficulty</h2>
+              <div className="option-row">
+                {DIFFICULTIES.map((d) => (
+                  <button
+                    key={d.depth}
+                    className={`option-btn ${depth === d.depth ? 'active' : ''}`}
+                    onClick={() => setDepth(d.depth)}
+                  >
+                    {d.label}
+                  </button>
+                ))}
+              </div>
+            </section>
+          </>
+        )}
+      </div>
+
+      <footer className="setup-footer">
+        <button className="start-btn" onClick={() => setStep('map')}>
+          Choose Map →
+        </button>
+      </footer>
     </div>
   );
 }
 
 function MapPreview({ map }: { map: MapConfig }) {
-  const W = 80, H = 60;
-  const scaleX = (W - 8) / map.fieldWidth;
-  const scaleY = (H - 8) / map.fieldHeight;
-  const px = (x: number) => 4 + x * scaleX;
-  const py = (y: number) => 4 + y * scaleY;
+  const pad = 4;
+  const vw = map.fieldWidth + pad * 2;
+  const vh = map.fieldHeight + pad * 2 + 3; // +3 for goal boxes
+  const px = (x: number) => pad + x;
+  const py = (y: number) => pad + 1.5 + y;   // +1.5 offset for top goal box
 
-  // Parse wall edges for rendering
   const wallSegs: Array<{ x1: number; y1: number; x2: number; y2: number }> = [];
   for (const key of map.walls) {
     const [aPart, bPart] = key.split('|');
@@ -126,16 +153,27 @@ function MapPreview({ map }: { map: MapConfig }) {
   const gx2 = px(map.goalMaxX);
 
   return (
-    <svg width={W} height={H} style={{ display: 'block', margin: '0 auto 4px' }}>
-      <rect x={px(0)} y={py(0)} width={map.fieldWidth * scaleX} height={map.fieldHeight * scaleY}
-        fill="#e8f4e8" stroke="#374151" strokeWidth={1.5} />
-      <rect x={gx1} y={py(0) - 6} width={gx2 - gx1} height={6} fill="rgba(59,130,246,0.4)" stroke="#3b82f6" strokeWidth={1} />
-      <rect x={gx1} y={py(map.fieldHeight)} width={gx2 - gx1} height={6} fill="rgba(239,68,68,0.4)" stroke="#ef4444" strokeWidth={1} />
+    <svg
+      viewBox={`0 0 ${vw} ${vh}`}
+      className="map-preview-svg"
+      preserveAspectRatio="xMidYMid meet"
+    >
+      {/* top goal */}
+      <rect x={gx1} y={pad - 0.5} width={gx2 - gx1} height={1.5}
+        fill="rgba(59,130,246,0.35)" stroke="#3b82f6" strokeWidth={0.4} />
+      {/* field */}
+      <rect x={px(0)} y={py(0)} width={map.fieldWidth} height={map.fieldHeight}
+        fill="#e8f4e8" stroke="#374151" strokeWidth={0.6} />
+      {/* bottom goal */}
+      <rect x={gx1} y={py(map.fieldHeight) - 0.1} width={gx2 - gx1} height={1.5}
+        fill="rgba(239,68,68,0.35)" stroke="#ef4444" strokeWidth={0.4} />
+      {/* walls */}
       {wallSegs.map((w, i) => (
         <line key={i} x1={px(w.x1)} y1={py(w.y1)} x2={px(w.x2)} y2={py(w.y2)}
-          stroke="#7c3aed" strokeWidth={1.5} strokeLinecap="round" />
+          stroke="#7c3aed" strokeWidth={0.7} strokeLinecap="round" />
       ))}
-      <circle cx={px(map.ballStart.x)} cy={py(map.ballStart.y)} r={3} fill="#f59e0b" />
+      {/* ball */}
+      <circle cx={px(map.ballStart.x)} cy={py(map.ballStart.y)} r={1} fill="#f59e0b" />
     </svg>
   );
 }
