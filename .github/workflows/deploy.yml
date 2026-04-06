@@ -23,6 +23,15 @@ jobs:
           cache: npm
       - run: npm ci --legacy-peer-deps
       - run: npx vitest run
+      - name: Check GA secret is available
+        env:
+          EXPO_PUBLIC_GA_ID: ${{ secrets.GA_MEASURMENT_ID }}
+        run: |
+          if [ -z "$EXPO_PUBLIC_GA_ID" ]; then
+            echo "::warning::GA_MEASURMENT_ID secret is empty or not found"
+          else
+            echo "GA_MEASURMENT_ID secret is set (${#EXPO_PUBLIC_GA_ID} chars)"
+          fi
       - name: Build
         env:
           EXPO_PUBLIC_GA_ID: ${{ secrets.GA_MEASURMENT_ID }}
