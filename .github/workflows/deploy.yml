@@ -25,16 +25,16 @@ jobs:
       - run: npx vitest run
       - name: Check GA secret is available
         env:
-          EXPO_PUBLIC_GA_ID: ${{ secrets.GA_MEASURMENT_ID }}
+          EXPO_PUBLIC_GA_ID: ${{ secrets.GA_MEASUREMENT_ID }}
         run: |
           if [ -z "$EXPO_PUBLIC_GA_ID" ]; then
-            echo "::warning::GA_MEASURMENT_ID secret is empty or not found"
+            echo "::warning::GA_MEASUREMENT_ID secret is empty or not found"
           else
-            echo "GA_MEASURMENT_ID secret is set (${#EXPO_PUBLIC_GA_ID} chars)"
+            echo "GA_MEASUREMENT_ID secret is set (${#EXPO_PUBLIC_GA_ID} chars)"
           fi
       - name: Build
         env:
-          EXPO_PUBLIC_GA_ID: ${{ secrets.GA_MEASURMENT_ID }}
+          EXPO_PUBLIC_GA_ID: ${{ secrets.GA_MEASUREMENT_ID }}
         run: npx expo export -p web
       - uses: actions/upload-pages-artifact@v3
         with:
