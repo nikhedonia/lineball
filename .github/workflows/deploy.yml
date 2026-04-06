@@ -21,11 +21,10 @@ jobs:
         with:
           node-version: 20
           cache: npm
-      - run: npm ci --legacy-peer-deps
       - run: npm test -- --run
       - name: Build
         env:
-          EXPO_PUBLIC_GA_ID: ${{ secrets.GA_MEASURMENT_ID }}
+          EXPO_PUBLIC_GA_ID: ${{ secrets.GA_MEASUREMENT_ID }}
         run: npx expo export -p web
       - uses: actions/upload-pages-artifact@v3
         with:
