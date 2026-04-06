@@ -23,11 +23,10 @@ jobs:
           cache: npm
       - run: npm ci --legacy-peer-deps
       - run: npm test -- --run
-      - run: npx expo export -p web
-      - name: Inject Google Analytics
+      - name: Build
         env:
-          GA_ID: ${{ secrets.GA_MEASUREMENT_ID }}
-        run: python3 scripts/inject-ga.py
+          EXPO_PUBLIC_GA_ID: ${{ secrets.GA_MEASURMENT_ID }}
+        run: npx expo export -p web
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

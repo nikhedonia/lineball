@@ -5,6 +5,23 @@ declare global {
   }
 }
 
+const GA_ID = process.env.EXPO_PUBLIC_GA_ID;
+
+// Dynamically load the GA4 script and initialise gtag on web.
+if (GA_ID && typeof document !== 'undefined') {
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function (...args: unknown[]) {
+    window.dataLayer.push(args);
+  };
+  window.gtag('js', new Date());
+  window.gtag('config', GA_ID);
+
+  const script = document.createElement('script');
+  script.async = true;
+  script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_ID}`;
+  document.head.appendChild(script);
+}
+
 function gtag(...args: unknown[]) {
   if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
     window.gtag(...args);
