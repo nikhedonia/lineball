@@ -13,4 +13,8 @@ export interface GameState {
   mustContinue: boolean;
   winner: Player | null;
   phase: GamePhase;
+  /** Timestamp (ms) when the current game started. */
+  gameStartTime: number;
+  /** Timestamp (ms) when the current player's turn started. */
+  turnStartTime: number;
 }

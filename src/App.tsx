@@ -6,6 +6,7 @@ import GameBoard from './components/GameBoard';
 import GameStatus from './components/GameStatus';
 import { useGameStore } from './store/gameStore';
 import { getBestMove } from './ai';
+import { trackPageView } from './analytics';
 
 function AIController() {
   const ball = useGameStore((s) => s.ball);
@@ -48,6 +49,11 @@ const styles = StyleSheet.create({
 
 export default function App() {
   const screen = useGameStore((s) => s.screen);
+
+  useEffect(() => {
+    trackPageView();
+  }, []);
+
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.safeArea}>
