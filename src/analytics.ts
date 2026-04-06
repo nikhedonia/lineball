@@ -1,7 +1,8 @@
 declare global {
   interface Window {
     gtag: (...args: unknown[]) => void;
-    dataLayer: unknown[];
+    // dataLayer accepts both IArguments (from gtag calls) and plain objects
+    dataLayer: (IArguments | unknown[])[];
   }
 }
 
@@ -10,8 +11,11 @@ const GA_ID = process.env.EXPO_PUBLIC_GA_ID;
 // Dynamically load the GA4 script and initialise gtag on web.
 if (GA_ID && typeof document !== 'undefined') {
   window.dataLayer = window.dataLayer || [];
-  window.gtag = function (...args: unknown[]) {
-    window.dataLayer.push(args);
+  // gtag.js requires the `arguments` object (not a spread array) to be pushed
+  // onto dataLayer — this is the canonical initialisation pattern.
+  window.gtag = function gtag() {
+    // eslint-disable-next-line prefer-rest-params
+    window.dataLayer.push(arguments);
   };
   window.gtag('js', new Date());
   window.gtag('config', GA_ID);
