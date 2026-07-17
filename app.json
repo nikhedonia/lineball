@@ -9,7 +9,7 @@
       "bundler": "metro"
     },
     "android": {
-      "package": "com.lineball.app",
+      "package": "com.nikhedonia.lineball",
       "versionCode": 1
     },
     "experiments": {
