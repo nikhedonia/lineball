@@ -8,6 +8,9 @@
       "output": "single",
       "bundler": "metro"
     },
+    "android": {
+      "package": "com.lineball.app"
+    },
     "experiments": {
       "baseUrl": "/lineball/"
     }
